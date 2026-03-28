@@ -144,14 +144,14 @@ const OBFUSCATION_PATTERNS: ObfuscationPattern[] = [
   {
     id: "octal-escape",
     description: "Bash octal escape sequences (potential command obfuscation)",
-    // Bound inner [^']{0,500} to prevent ReDoS backtracking on long inputs.
-    regex: /\$'(?:[^']{0,500}\\[0-7]{3}){2,}/,
+    // Bound inner [^']{0,500} and outer {2,20} to prevent ReDoS backtracking.
+    regex: /\$'(?:[^']{0,500}\\[0-7]{3}){2,20}/,
   },
   {
     id: "hex-escape",
     description: "Bash hex escape sequences (potential command obfuscation)",
-    // Bound inner [^']{0,500} to prevent ReDoS backtracking on long inputs.
-    regex: /\$'(?:[^']{0,500}\\x[0-9a-fA-F]{2}){2,}/,
+    // Bound inner [^']{0,500} and outer {2,20} to prevent ReDoS backtracking.
+    regex: /\$'(?:[^']{0,500}\\x[0-9a-fA-F]{2}){2,20}/,
   },
   {
     id: "python-exec-encoded",
