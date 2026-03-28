@@ -214,5 +214,19 @@ describe("detectCommandObfuscation", () => {
       expect(result.detected).toBe(true);
       expect(result.matchedPatterns.length).toBeGreaterThanOrEqual(2);
     });
+
+    it("completes in bounded time for pathological regex input (ReDoS resistance)", () => {
+      // A long string with many non-quote chars that doesn't match the octal/hex pattern.
+      // Without quantifier bounds this could cause O(n^2) backtracking.
+      const input = `$'${"a".repeat(5_000)}'`;
+      const start = performance.now();
+      const result = detectCommandObfuscation(input);
+      const elapsed = performance.now() - start;
+      expect(result.matchedPatterns).not.toContain("octal-escape");
+      expect(result.matchedPatterns).not.toContain("hex-escape");
+      // Should complete well under 1 second even on slow CI; pathological
+      // backtracking would take orders of magnitude longer.
+      expect(elapsed).toBeLessThan(1_000);
+    });
   });
 });
