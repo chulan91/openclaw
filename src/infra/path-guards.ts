@@ -11,7 +11,9 @@ export function normalizeWindowsPathForComparison(input: string): string {
       normalized = `\\\\${normalized.slice(4)}`;
     }
   }
-  return normalized.replaceAll("/", "\\").toLowerCase();
+  // NFC-normalize before lowercasing so combining-character variants of the
+  // same visual glyph compare equal and cannot bypass path containment checks.
+  return normalized.replaceAll("/", "\\").normalize("NFC").toLowerCase();
 }
 
 export function isNodeError(value: unknown): value is NodeJS.ErrnoException {

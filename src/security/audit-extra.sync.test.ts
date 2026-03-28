@@ -52,4 +52,18 @@ describe("safeEqualSecret", () => {
     expect(safeEqualSecret("secret", undefined)).toBe(false);
     expect(safeEqualSecret(null, "secret")).toBe(false);
   });
+
+  it("rejects when both values are null or undefined", () => {
+    expect(safeEqualSecret(null, null)).toBe(false);
+    expect(safeEqualSecret(undefined, undefined)).toBe(false);
+    expect(safeEqualSecret(null, undefined)).toBe(false);
+  });
+
+  it("matches empty strings", () => {
+    expect(safeEqualSecret("", "")).toBe(true);
+  });
+
+  it("rejects empty string vs non-empty", () => {
+    expect(safeEqualSecret("", "non-empty")).toBe(false);
+  });
 });

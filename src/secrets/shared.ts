@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -57,10 +58,22 @@ export function readTextFileIfExists(pathname: string): string | null {
 
 export function writeTextFileAtomic(pathname: string, value: string, mode = 0o600): void {
   ensureDirForFile(pathname);
-  const tempPath = `${pathname}.tmp-${process.pid}-${Date.now()}`;
-  fs.writeFileSync(tempPath, value, "utf8");
-  fs.chmodSync(tempPath, mode);
-  fs.renameSync(tempPath, pathname);
+  // Use cryptographically random suffix to prevent temp-path prediction attacks.
+  const suffix = crypto.randomBytes(8).toString("hex");
+  const tempPath = `${pathname}.tmp-${suffix}`;
+  try {
+    fs.writeFileSync(tempPath, value, "utf8");
+    fs.chmodSync(tempPath, mode);
+    fs.renameSync(tempPath, pathname);
+  } catch (err) {
+    // Clean up the temp file on any error to avoid leaking partial writes.
+    try {
+      fs.unlinkSync(tempPath);
+    } catch {
+      // ignore cleanup errors — the original error is more important
+    }
+    throw err;
+  }
 }
 
 export function describeUnknownError(err: unknown): string {

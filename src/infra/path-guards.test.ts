@@ -35,6 +35,14 @@ describe("normalizeWindowsPathForComparison", () => {
       "\\\\server\\share\\folder",
     );
   });
+
+  it("NFC-normalizes Unicode so combining-character variants compare equal", () => {
+    // "é" can be represented as U+00E9 (NFC) or U+0065 U+0301 (NFD).
+    // Both visual appearances are identical; the comparison should treat them equally.
+    const nfc = "C:\\Caf\u00e9"; // precomposed é
+    const nfd = "C:\\Cafe\u0301"; // e + combining acute accent
+    expect(normalizeWindowsPathForComparison(nfc)).toBe(normalizeWindowsPathForComparison(nfd));
+  });
 });
 
 describe("node path error helpers", () => {
